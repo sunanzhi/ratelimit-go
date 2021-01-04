@@ -43,7 +43,9 @@ func main() {
 #### hey.exe 轻量压缩测试结果
 
 > 用golang的boom来做压测,要提前安装boom工具
+
 > go get github.com/rakyll/hey
+
 > go install github.com/rakyll/hey
 
 **执行以下命令**
