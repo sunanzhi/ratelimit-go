@@ -89,7 +89,6 @@ func (slideWindow *SlideWindow) slide() {
 		headChain = headChain.Next()
 		slideWindow.BucketChain = headChain
 		slideWindow.mu.Unlock()
-		slideWindow.Print()
 	}
 }
 
