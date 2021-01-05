@@ -122,13 +122,7 @@ func main() {
 
 **节点数据如下:(其他数据不具体展示)**
 
-```mermaid
-graph TB;
-	startTime:1-.node1.-endTime:2
-	startTime:2-.node2.-endTime:3
-	startTime:3-.node3.-endTime:4
-	startTime:4-.node4.-endTime:5
-```
+![nodeData](https://static.sunanzhi.com/github/ratelimit-go/20210105161233.png)
 
 **窗口滑动:**
 
