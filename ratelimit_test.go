@@ -6,7 +6,12 @@ import (
 )
 
 func BenchmarkLimiting(b *testing.B) {
-	var slidewindow, _ = Init(10, 1000, 10000)
+	var (
+		limitTime   = 10
+		bucketCount = 5
+		limitCount  = 200
+	)
+	var slidewindow, _ = Init(limitTime, bucketCount, limitCount)
 	for i := 0; i < 10000; i++ {
 
 		go func() {

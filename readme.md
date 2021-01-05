@@ -3,7 +3,7 @@
 
 > **算法思想** 将一个大的时间窗口分成多个小窗口，每次大窗口向后滑动一个小窗口，并保证大的窗口内流量不会超出最大值，这种实现比固定窗口的流量曲线更加平滑。
 
-![avatar](https://static.sunanzhi.com/github/ratelimit-go/68747470733a2f2f63646e2e6c6561726e6b752e636f6d2f75706c6f6164732f696d616765732f3230323031322f30372f363936342f6d497a415578697042582e706e67.png)
+![slidewindow](https://static.sunanzhi.com/github/ratelimit-go/20190925171656739496.png)
 
 ----
 
@@ -20,7 +20,12 @@ import(
 )
 
 func main() {
-    slideWindow, _ := ratelimit.Init(10, 5, 200)
+    var (
+        limitTime = 10
+        bucketCount = 5
+        limitCount = 200
+    )
+    slideWindow, _ := ratelimit.Init(limitTime, bucketCount, limitCount)
 
     http.HandleFunc("/ratelimit", func(w http.ResponseWriter, r *http.Request) {
         err := slideWindow.Limiting()
@@ -35,10 +40,6 @@ func main() {
     http.ListenAndServe(":9090", nil)
 }
 ```
-
-#### 原理实现
-
-@todo
 
 #### hey.exe 轻量压缩测试结果
 
@@ -101,3 +102,46 @@ func main() {
     [502] 100 responses
   ```
 </details>
+
+
+#### 原理实现
+
+> 基于双向链表实现,减少滑动过程中过多的创建销毁
+
+![doublyLinkedList](https://static.sunanzhi.com/github/ratelimit-go/20190925171656739497.png)
+
+> `bukcetCount` 数值就是链表长度,每次初始化链表将会以当前时间末节点 + 节点的时间范畴开始 依次递减
+
+**举例:** 
+
+- 限速时间 `limitTime=4s` 
+- 节点数量 `bucketCount=4`
+- 且当前时间为第 `4` 秒
+
+> 那么每个节点统计时间范畴为 `1s` 
+
+**节点数据如下:(其他数据不具体展示)**
+
+```mermaid
+graph TB;
+	startTime:1-.node1.-endTime:2
+	startTime:2-.node2.-endTime:3
+	startTime:3-.node3.-endTime:4
+	startTime:4-.node4.-endTime:5
+```
+
+**窗口滑动:**
+
+> 通过定时任务滑动,定时时间为每个节点统计的时间范畴值(单位毫秒)
+
+**说明:**
+
+- 从初始化到后续的滑动,链表有效时间的节点只有末节点
+- 因此请求进来的都统一放入末节点 `count` 
+- 因为滑动窗口会改变末节点,因此不需要遍历当前请求时间属于哪个节点
+
+
+**注意:**
+
+- 此包只有全部限流,不能映射任何 `key` 或者其他字段来做分组
+- 如果有需求请自己创建线程安全 `map` 来映射限流数据
